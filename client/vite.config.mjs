@@ -6,11 +6,10 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "https://metabase-demo-dcqg.onrender.com",
+        target: "http://localhost:5200", // LOCAL BACKEND
         changeOrigin: true,
         secure: false,
       },
     },
   },
 });
- 
