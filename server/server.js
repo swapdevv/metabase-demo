@@ -7,13 +7,23 @@ dotenv.config();
 
 const app = express();
 
-// Local development URL:
-// app.use(cors());
+// Allow local + production
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://react-node-dashboard-e.netlify.app",
+];
 
-// Production URL: Render deployment
 app.use(
   cors({
-    origin: ["https://react-node-dashboard-e.netlify.app"],
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );
@@ -49,8 +59,9 @@ app.get("/api/metabase-dashboard", (req, res) => {
   const payload = {
     resource: { dashboard: 3 }, // dashboard ID
     params: {},
-    exp: Math.round(Date.now() / 1000) + 5 * 60, // 5 minute expiration
+    exp: Math.round(Date.now() / 1000) + 5 * 60,
   };
+
   const token = jwt.sign(payload, METABASE_SECRET_KEY);
 
   const iframeUrl =
@@ -58,12 +69,10 @@ app.get("/api/metabase-dashboard", (req, res) => {
     "/embed/dashboard/" +
     token +
     "#bordered=true&titled=true";
-
   // "#theme=night&bordered=true&titled=true";
 
   res.json({ iframeUrl });
 });
 
-const PORT = process.env.PORT || 3000; // local fallback
-
+const PORT = process.env.PORT || 10000; // Render requires 10000
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
