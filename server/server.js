@@ -5,38 +5,40 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-// const app = express();
-// app.use(cors());
-// app.use(express.json());
-
-// app.post("/api/login", (req, res) => {
-//   res.json({ message: "Login OK!" });
-// });
-
 const app = express();
-app.use(cors());
+
+// Local development URL:
+// app.use(cors());
+
+// Production URL: Render deployment
+app.use(
+  cors({
+    origin: ["https://react-node-dashboard-e.netlify.app"],
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 
 // Temporary "auth" simulation (pretend login)
 let isLoggedIn = false;
 
+app.get("/test-ok", (req, res) => {
+  res.json({ message: "Test OK!" });
+});
+
 app.post("/api/login", (req, res) => {
   isLoggedIn = true;
-  res.json({ message: "Login OK!" });
+  res.json({ message: "Logged in" });
 });
 
 app.post("/api/logout", (req, res) => {
   isLoggedIn = false;
-  res.json({ message: "Logout OK!" });
+  res.json({ message: "Logged out" });
 });
 
 // Secure Metabase URL generator
 app.get("/api/metabase-dashboard", (req, res) => {
-  console.log(
-    "process.env.METABASE_SECRET_KEY ",
-    process.env.METABASE_SECRET_KEY
-  );
-
   if (!isLoggedIn) {
     return res.status(401).json({ message: "Unauthorized" });
   }
@@ -47,7 +49,7 @@ app.get("/api/metabase-dashboard", (req, res) => {
   const payload = {
     resource: { dashboard: 3 }, // dashboard ID
     params: {},
-    exp: Math.round(Date.now() / 1000) + 1 * 60, // 1 minute expiration
+    exp: Math.round(Date.now() / 1000) + 5 * 60, // 5 minute expiration
   };
   const token = jwt.sign(payload, METABASE_SECRET_KEY);
 
@@ -62,4 +64,6 @@ app.get("/api/metabase-dashboard", (req, res) => {
   res.json({ iframeUrl });
 });
 
-app.listen(5200, () => console.log("Server running on port 5200"));
+const PORT = process.env.PORT || 3000; // local fallback
+
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
