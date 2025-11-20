@@ -48,16 +48,20 @@ app.post("/api/logout", (req, res) => {
 });
 
 // Secure Metabase URL generator
-app.get("/api/metabase-dashboard", (req, res) => {
+app.get("/api/metabase-dashboard/:dashboardId", (req, res) => {
   if (!isLoggedIn) {
     return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  if (!req.params.dashboardId) {
+    return res.status(400).json({ message: "Dashboard ID is required" });
   }
 
   const METABASE_SITE_URL = process.env.METABASE_SITE_URL;
   const METABASE_SECRET_KEY = process.env.METABASE_SECRET_KEY;
 
   const payload = {
-    resource: { dashboard: 3 }, // dashboard ID
+    resource: { dashboard: parseInt(req.params.dashboardId) }, // dashboard ID
     params: {},
     exp: Math.round(Date.now() / 1000) + 5 * 60,
   };
