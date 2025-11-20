@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const API = import.meta.env.BACKEND_API_URL || "";
+const API = import.meta.env.VITE_BACKEND_API_URL || "";
 
 function App() {
   const [loggedIn, setLoggedIn] = useState(false);
